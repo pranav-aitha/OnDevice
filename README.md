@@ -1,6 +1,8 @@
-# 🛡️ OnDevice — Your Privacy Is our priority
+# 🛡️ OnDevice — Privacy-First File Converter
 
 OnDevice is a premium, privacy-first web utility engineered to convert images and standard documents entirely inside your browser sandbox. Traditional web converters secretly stream your private documents to third-party cloud containers. OnDevice flips the script: **Zero uploads. Zero tracking. 100% Client-Side.**
+
+> ### 🔒 "Your Privacy is Our Absolute Priority"
 
 Developed by **Pranav Aitha**
 
@@ -10,8 +12,8 @@ Developed by **Pranav Aitha**
 
 - 🔒 **Zero Server Ingestion:** Files are parsed exclusively inside local memory via HTML5 APIs. Absolutely zero file bytes leave your device.
 - ⏳ **Instant RAM Erasure:** The moment you close the tab, all transient memory buffers vanish forever.
-- 🛜 **Offline Capable:** Once the web application loads, it can function entirely without an internet connection.
-- 🎨 **Premium UI/UX:** Built featuring an ultra-dynamic glassmorphic design that is as functional as it is beautiful.
+- 🛜 **Offline Capable:** Once the web application loads, it functions entirely without an internet connection.
+- ⚙️ **Pure Sandbox Execution:** Runs strictly within your local browser ecosystem, meaning no stealth background APIs, no analytics pings, and complete data isolation.
 
 ---
 
@@ -35,29 +37,17 @@ Because OnDevice respects your privacy by processing everything locally on your 
 | **File Size Limit** | Files exceeding **80MB** may exhaust browser tab RAM. |
 | **Exclusions** | Heavy video containers and proprietary binary Office docs (`DOCX`, `XLSX`, `PPTX`) are not parsed. |
 
-*Note: WebP & AVIF output compatibility depends directly on your browser's underlying canvas engine.*
+> ⚠️ **Note:** WebP & AVIF output compatibility depends directly on your browser's underlying canvas engine.
 
 ---
 
-## 🚀 How to Run Locally
+## 🚀 How to Use It Happily
 
-### Prerequisites
-You only need a modern web browser supporting modern HTML5 APIs (Chrome, Firefox, Edge, or Safari).
+No installations, no terminal commands, and no developer setup needed! To access this file and use it completely offline:
 
-### Steps
-1. Clone the repository:
-   ```bash
-   git clone https://github.com
-   ```
-2. Navigate into the project folder:
-   ```bash
-   cd ondevice
-   ```
-3. Open `index.html` directly in your browser, or serve it using a lightweight local server:
-   ```bash
-   # If you use Python
-   python -m http.server 8080
-   ```
+1. **Download the source files locally** to your machine.
+2. Double-click the **`index.html`** file to launch it instantly in any modern web browser (Chrome, Firefox, Edge, or Safari).
+3. Bookmark the page to use it happily whenever you need secure, instant conversions!
 
 ---
 
@@ -71,4 +61,4 @@ Want to verify our privacy promise?
 ---
 
 ## ⚖️ License
-Distributed under the Unilicense License. See `LICENSE` for more information.
+This project is dedicated to **Unilicense**. You are free to copy, modify, publish, use, compile, sell, or distribute this software in source code form or as a compiled binary, for any purpose, commercial or non-commercial, and by any means.
