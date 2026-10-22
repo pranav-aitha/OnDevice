@@ -1,4 +1,4 @@
-# 🛡️ OnDevice — Your Security Is our priority
+# 🛡️ OnDevice — Your Privacy Is our priority
 
 OnDevice is a premium, privacy-first web utility engineered to convert images and standard documents entirely inside your browser sandbox. Traditional web converters secretly stream your private documents to third-party cloud containers. OnDevice flips the script: **Zero uploads. Zero tracking. 100% Client-Side.**
 
