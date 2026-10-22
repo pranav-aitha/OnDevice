@@ -1,0 +1,1773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="OnDevice converts files entirely in your browser with zero server uploads." />
+  <title>OnDevice — Ultra Dynamic Glassmorphism</title>
+  <style>
+    :root {
+      --bg-core: #040810;
+      --ink: #f8fafc;
+      --muted: #94a3b8;
+      --faint: #64748b;
+      
+      /* Glass Tokens */
+      --glass-surface: rgba(255, 255, 255, 0.05);
+      --glass-surface-hover: rgba(255, 255, 255, 0.08);
+      --glass-border: rgba(255, 255, 255, 0.14);
+      --glass-border-bright: rgba(255, 255, 255, 0.32);
+      --glass-inner-glow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.28), inset 0 -1px 1px 0 rgba(0, 0, 0, 0.4);
+      --glass-shadow: 0 24px 60px -12px rgba(0, 0, 0, 0.65), 0 0 35px rgba(20, 184, 166, 0.08);
+      
+      /* Neon Accents */
+      --teal: #2dd4bf;
+      --teal-glow: rgba(45, 212, 191, 0.35);
+      --cyan: #38bdf8;
+      --cyan-glow: rgba(56, 189, 248, 0.3);
+      --violet: #a855f7;
+      --violet-glow: rgba(168, 85, 247, 0.25);
+      
+      --warn: #fbbf24;
+      --danger: #f87171;
+      --ok: #34d399;
+      --radius: 28px;
+      --sans: "Plus Jakarta Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--sans);
+      color: var(--ink);
+      background-color: var(--bg-core);
+      line-height: 1.5;
+      overflow-x: hidden;
+      perspective: 1200px;
+    }
+
+    /* Ambient Background Atmosphere */
+    .viewport-ambient {
+      position: fixed;
+      inset: 0;
+      z-index: -3;
+      background: 
+        radial-gradient(1100px circle at 15% 15%, rgba(14, 116, 144, 0.28) 0%, transparent 60%),
+        radial-gradient(900px circle at 85% 25%, rgba(109, 40, 217, 0.24) 0%, transparent 55%),
+        radial-gradient(1000px circle at 50% 90%, rgba(13, 148, 136, 0.2) 0%, transparent 65%),
+        linear-gradient(175deg, #030712 0%, #06101e 45%, #050b14 100%);
+      pointer-events: none;
+    }
+
+    /* Dynamic Glass Morphing Background Orbs */
+    .morph-orb {
+      position: fixed;
+      z-index: -2;
+      filter: blur(80px);
+      opacity: 0.55;
+      pointer-events: none;
+      will-change: transform, border-radius;
+      animation: morphBlob 22s ease-in-out infinite alternate;
+    }
+
+    .orb-1 {
+      width: 520px;
+      height: 520px;
+      top: -8%;
+      left: -6%;
+      background: linear-gradient(135deg, #06b6d4, #2dd4bf);
+      animation-duration: 20s;
+    }
+
+    .orb-2 {
+      width: 480px;
+      height: 480px;
+      top: 25%;
+      right: -8%;
+      background: linear-gradient(135deg, #8b5cf6, #ec4899);
+      animation-duration: 26s;
+      animation-delay: -5s;
+    }
+
+    .orb-3 {
+      width: 440px;
+      height: 440px;
+      bottom: -10%;
+      left: 30%;
+      background: linear-gradient(135deg, #0ea5e9, #14b8a6);
+      animation-duration: 24s;
+      animation-delay: -10s;
+    }
+
+    @keyframes morphBlob {
+      0% {
+        border-radius: 42% 58% 70% 30% / 45% 45% 55% 55%;
+        transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+      }
+      33% {
+        border-radius: 70% 30% 46% 54% / 30% 29% 71% 70%;
+        transform: translate3d(60px, 40px, 0) rotate(120deg) scale(1.08);
+      }
+      66% {
+        border-radius: 100% 60% 60% 100% / 100% 100% 60% 60%;
+        transform: translate3d(-40px, 60px, 0) rotate(240deg) scale(0.94);
+      }
+      100% {
+        border-radius: 42% 58% 70% 30% / 45% 45% 55% 55%;
+        transform: translate3d(0, 0, 0) rotate(360deg) scale(1);
+      }
+    }
+
+    /* Ambient Dynamic Light Mesh Overlay */
+    .sheen-grid {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+      background-size: 32px 32px;
+      mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, black 20%, transparent 80%);
+      -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, black 20%, transparent 80%);
+      opacity: 0.6;
+    }
+
+    .wrap {
+      width: min(1120px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 24px 0 80px;
+    }
+
+    /* Glass Header */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 18px;
+      margin-bottom: 24px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .mark {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.04));
+      border: 1px solid var(--glass-border-bright);
+      box-shadow: 0 8px 24px rgba(45, 212, 191, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+    }
+
+    .brand:hover .mark {
+      transform: scale(1.08) rotate(4deg);
+      box-shadow: 0 12px 30px rgba(45, 212, 191, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.6);
+    }
+
+    .wordmark {
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+    .wordmark span {
+      background: linear-gradient(135deg, #5eead4, #38bdf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .trust-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 16px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(14px);
+      color: var(--muted);
+      font-size: 0.85rem;
+      font-weight: 500;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+      transition: border-color 0.3s, color 0.3s;
+    }
+    .trust-pill:hover {
+      border-color: rgba(94, 234, 212, 0.4);
+      color: var(--ink);
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--ok);
+      box-shadow: 0 0 12px var(--ok), 0 0 0 3px rgba(52, 211, 153, 0.2);
+      animation: pulse 2.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.7; transform: scale(0.88); }
+    }
+
+    /* Core Dynamic Glassmorphism Card Engine */
+    .glass-card {
+      position: relative;
+      background: var(--glass-surface);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      box-shadow: var(--glass-shadow);
+      box-shadow: var(--glass-shadow), var(--glass-inner-glow);
+      backdrop-filter: blur(28px) saturate(180%);
+      -webkit-backdrop-filter: blur(28px) saturate(180%);
+      transform-style: preserve-3d;
+      transition: transform 0.2s cubic-bezier(0.2, 0, 0.2, 1), border-color 0.3s ease, box-shadow 0.3s ease;
+      overflow: hidden;
+    }
+
+    /* Interactive Specular Glare Follower */
+    .glass-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: radial-gradient(650px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255, 255, 255, 0.12), transparent 45%);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      z-index: 1;
+    }
+
+    .glass-card:hover::before {
+      opacity: 1;
+    }
+
+    .glass-card:hover {
+      border-color: rgba(255, 255, 255, 0.26);
+    }
+
+    /* Hero Section */
+    .hero {
+      padding: 56px 48px;
+      margin-bottom: 24px;
+      position: relative;
+    }
+
+    .hero-glow {
+      position: absolute;
+      width: 320px;
+      height: 320px;
+      right: -60px;
+      top: -80px;
+      background: radial-gradient(circle, var(--teal-glow) 0%, transparent 70%);
+      filter: blur(40px);
+      pointer-events: none;
+    }
+
+    .kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--teal);
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin: 0 0 16px;
+      background: rgba(45, 212, 191, 0.1);
+      padding: 6px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(45, 212, 191, 0.25);
+    }
+
+    h1 {
+      margin: 0 0 16px;
+      font-size: clamp(2.3rem, 5vw, 3.8rem);
+      line-height: 1.06;
+      letter-spacing: -0.04em;
+      font-weight: 800;
+      max-width: 17ch;
+      background: linear-gradient(180deg, #ffffff 40%, #cbd5e1 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .lede {
+      margin: 0 0 28px;
+      color: var(--muted);
+      font-size: 1.14rem;
+      max-width: 54ch;
+      font-weight: 400;
+      line-height: 1.6;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      position: relative;
+      z-index: 2;
+    }
+
+    /* Buttons with Liquid Glass & Glow */
+    .btn {
+      appearance: none;
+      border: 0;
+      cursor: pointer;
+      font: inherit;
+      font-weight: 700;
+      border-radius: 999px;
+      padding: 13px 24px;
+      color: #03201d;
+      background: linear-gradient(135deg, #a7f3d0 0%, #5eead4 50%, #2dd4bf 100%);
+      box-shadow: 0 8px 25px rgba(45, 212, 191, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn::after {
+      content: "";
+      position: absolute;
+      top: -50%;
+      left: -60%;
+      width: 40%;
+      height: 200%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+      transform: rotate(25deg);
+      transition: left 0.7s ease;
+      pointer-events: none;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 30px rgba(45, 212, 191, 0.48), inset 0 1px 0 #ffffff;
+      filter: brightness(1.04);
+    }
+    .btn:hover::after {
+      left: 140%;
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn[disabled] {
+      cursor: not-allowed;
+      filter: grayscale(0.6);
+      opacity: 0.5;
+      box-shadow: none;
+      transform: none;
+    }
+
+    .ghost {
+      appearance: none;
+      border: 1px solid var(--glass-border);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--ink);
+      font: inherit;
+      font-weight: 600;
+      border-radius: 999px;
+      padding: 13px 22px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      backdrop-filter: blur(14px);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      transition: all 0.25s ease;
+    }
+
+    .ghost:hover {
+      background: rgba(255, 255, 255, 0.09);
+      border-color: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+      color: #ffffff;
+    }
+
+    /* Grid Layout */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1.12fr 0.88fr;
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+
+    .panel {
+      padding: 34px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    h2 {
+      margin: 0 0 14px;
+      font-size: 1.35rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #ffffff;
+    }
+
+    .why p, .limits p, .note {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.98rem;
+    }
+
+    .why ul {
+      margin: 20px 0 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 16px;
+    }
+
+    .why li {
+      display: grid;
+      grid-template-columns: 34px 1fr;
+      gap: 14px;
+      align-items: start;
+    }
+
+    .why strong {
+      display: block;
+      color: #f1f5f9;
+      font-weight: 650;
+      margin-bottom: 2px;
+    }
+    .why span {
+      color: var(--muted);
+      font-size: 0.94rem;
+    }
+
+    .ico {
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      background: rgba(45, 212, 191, 0.12);
+      border: 1px solid rgba(45, 212, 191, 0.25);
+      color: var(--teal);
+      font-size: 0.9rem;
+      font-weight: 700;
+      box-shadow: 0 4px 14px rgba(45, 212, 191, 0.15);
+    }
+
+    .limits ul {
+      margin: 16px 0 0;
+      padding-left: 20px;
+      color: var(--muted);
+      display: grid;
+      gap: 10px;
+      font-size: 0.94rem;
+    }
+
+    /* Converter Glass Card */
+    #converter {
+      padding: 36px;
+      scroll-margin-top: 24px;
+    }
+
+    /* Dynamic Glass Drop Well */
+    .drop {
+      position: relative;
+      border: 2px dashed rgba(255, 255, 255, 0.2);
+      border-radius: 22px;
+      padding: 42px 24px;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.02);
+      transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+    }
+
+    .drop:hover {
+      border-color: rgba(94, 234, 212, 0.5);
+      background: rgba(45, 212, 191, 0.04);
+      transform: scale(1.005);
+    }
+
+    .drop.over {
+      border-color: var(--teal);
+      background: rgba(45, 212, 191, 0.1);
+      box-shadow: 0 0 35px rgba(45, 212, 191, 0.25), inset 0 0 20px rgba(45, 212, 191, 0.1);
+      transform: scale(1.015);
+    }
+
+    .drop-icon-wrap {
+      width: 58px;
+      height: 58px;
+      border-radius: 18px;
+      background: rgba(45, 212, 191, 0.1);
+      border: 1px solid rgba(45, 212, 191, 0.24);
+      display: grid;
+      place-items: center;
+      margin: 0 auto 14px;
+      box-shadow: 0 8px 24px rgba(45, 212, 191, 0.15);
+      transition: transform 0.3s ease;
+    }
+
+    .drop:hover .drop-icon-wrap {
+      transform: translateY(-4px) scale(1.05);
+    }
+
+    .drop h3 {
+      margin: 0 0 6px;
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+
+    .drop p {
+      margin: 0;
+      color: var(--faint);
+      font-size: 0.95rem;
+    }
+
+    .browse {
+      margin-top: 18px;
+    }
+
+    .file-input {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      overflow: hidden;
+    }
+
+    /* Meta Display */
+    .meta {
+      display: none;
+      margin-top: 20px;
+      padding: 16px 20px;
+      border-radius: 18px;
+      background: rgba(0, 0, 0, 0.28);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(14px);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    }
+    .meta.show { display: block; animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .meta-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .fname {
+      font-weight: 700;
+      font-size: 1.05rem;
+      color: #ffffff;
+      word-break: break-all;
+    }
+    .fsub {
+      color: var(--faint);
+      font-size: 0.88rem;
+      margin-top: 3px;
+    }
+
+    /* Conversion Options & Morphing Chips */
+    .controls { display: none; margin-top: 24px; }
+    .controls.show { display: block; animation: fadeIn 0.35s ease; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .label {
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--teal);
+      margin: 0 0 12px;
+      font-weight: 700;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .chip {
+      appearance: none;
+      border: 1px solid var(--glass-border);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--ink);
+      font: inherit;
+      font-weight: 650;
+      font-size: 0.92rem;
+      border-radius: 999px;
+      padding: 9px 18px;
+      cursor: pointer;
+      backdrop-filter: blur(12px);
+      transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    .chip:hover {
+      background: rgba(255, 255, 255, 0.09);
+      border-color: rgba(255, 255, 255, 0.28);
+      transform: translateY(-1px);
+    }
+
+    .chip[aria-pressed="true"] {
+      background: rgba(45, 212, 191, 0.16);
+      border-color: var(--teal);
+      color: var(--teal);
+      box-shadow: 0 4px 18px rgba(45, 212, 191, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    }
+
+    .opts {
+      display: none;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+    .opts.show { display: grid; }
+
+    .field {
+      background: rgba(0, 0, 0, 0.24);
+      border: 1px solid var(--glass-border);
+      border-radius: 18px;
+      padding: 14px 18px;
+      backdrop-filter: blur(10px);
+    }
+
+    .field label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.88rem;
+      color: var(--muted);
+      margin-bottom: 10px;
+      font-weight: 500;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--teal);
+      cursor: pointer;
+    }
+
+    select, input[type="color"] {
+      width: 100%;
+      font: inherit;
+      color: var(--ink);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      padding: 9px 12px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    select:focus { border-color: var(--teal); }
+    input[type="color"] { height: 42px; padding: 4px; cursor: pointer; }
+
+    /* Status & Liquid Glowing Progress Bar */
+    .status {
+      min-height: 1.5em;
+      margin: 14px 0 0;
+      color: var(--muted);
+      font-size: 0.94rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .status.warn { color: var(--warn); }
+    .status.err { color: var(--danger); }
+    .status.ok { color: var(--ok); }
+
+    .bar {
+      display: none;
+      height: 8px;
+      margin-top: 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4);
+    }
+    .bar.show { display: block; }
+    .bar > i {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, #38bdf8, #2dd4bf);
+      border-radius: inherit;
+      box-shadow: 0 0 16px var(--teal);
+      transition: width 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Result Preview Container */
+    .result {
+      display: none;
+      margin-top: 24px;
+      padding-top: 24px;
+      border-top: 1px solid var(--glass-border);
+    }
+    .result.show { display: block; animation: slideDown 0.35s ease; }
+
+    .preview {
+      margin: 12px 0 18px;
+      border-radius: 20px;
+      overflow: hidden;
+      background: repeating-conic-gradient(#08111a 0% 25%, #0e1e2d 0% 50%) 0 0 / 22px 22px;
+      border: 1px solid var(--glass-border);
+      max-height: 380px;
+      display: grid;
+      place-items: center;
+      box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
+    }
+
+    .preview img {
+      max-width: 100%;
+      max-height: 380px;
+      display: block;
+      object-fit: contain;
+    }
+
+    .preview pre, .preview iframe {
+      width: 100%;
+      min-height: 190px;
+      max-height: 340px;
+      margin: 0;
+      border: 0;
+      background: rgba(5, 11, 20, 0.85);
+      color: #e2e8f0;
+      padding: 16px;
+      overflow: auto;
+      font-size: 0.88rem;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    footer {
+      margin-top: 36px;
+      text-align: center;
+      color: var(--faint);
+      font-size: 0.92rem;
+    }
+    footer strong { color: var(--ink); font-weight: 650; }
+
+    @media (max-width: 860px) {
+      .grid-2 { grid-template-columns: 1fr; }
+      .hero, #converter, .panel, .limits { padding: 26px 20px; }
+      .opts { grid-template-columns: 1fr; }
+      header { flex-wrap: wrap; }
+      h1 { font-size: 2.3rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .morph-orb, .atmosphere, .sheen-grid { animation: none !important; }
+      .glass-card { transform: none !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Dynamic Atmospheric Background & Liquid Morphing Glass Orbs -->
+  <div class="viewport-ambient" aria-hidden="true"></div>
+  <div class="morph-orb orb-1" aria-hidden="true"></div>
+  <div class="morph-orb orb-2" aria-hidden="true"></div>
+  <div class="morph-orb orb-3" aria-hidden="true"></div>
+  <div class="sheen-grid" aria-hidden="true"></div>
+
+  <div class="wrap">
+    <header>
+      <a class="brand" href="#top" aria-label="OnDevice">
+        <span class="mark" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <rect x="3" y="2.5" width="18" height="19" rx="4" stroke="#5eead4" stroke-width="1.8"/>
+            <path d="M7.5 12l3 3 6-6" stroke="#f8fafc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="wordmark">On<span>Device</span></span>
+      </a>
+      <div class="trust-pill" title="File bytes are processed in-browser with zero uploads.">
+        <span class="dot" aria-hidden="true"></span>
+        Zero Uploads · Stays on this device
+      </div>
+    </header>
+
+    <section class="glass-card hero" id="top">
+      <div class="hero-glow"></div>
+      <span class="kicker">Privacy-First Engine</span>
+      <h1>Your files never leave this device.</h1>
+      <p class="lede">
+        OnDevice converts your images and documents entirely inside your browser sandbox. 
+        Zero server transmissions. No surveillance, and no hidden APIs.
+      </p>
+      <div class="hero-actions">
+        <a class="btn" href="#converter">
+          <span>Start converting</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+        <a class="ghost" href="#safer">Why this is safer</a>
+      </div>
+    </section>
+
+    <div class="grid-2">
+      <section class="glass-card panel why" id="safer">
+        <h2>Why this is safer</h2>
+        <p>Traditional web converters secretly stream your private documents to third-party cloud containers. Once uploaded, you have no control over storage or access.</p>
+        <ul>
+          <li>
+            <span class="ico" aria-hidden="true">✓</span>
+            <div><strong>Zero Server Ingestion</strong><span>Files are parsed exclusively inside local memory via HTML5 APIs.</span></div>
+          </li>
+          <li>
+            <span class="ico" aria-hidden="true">✓</span>
+            <div><strong>Instant RAM Erasure</strong><span>Close the tab and all transient memory buffers vanish forever.</span></div>
+          </li>
+          <li>
+            <span class="ico" aria-hidden="true">✓</span>
+            <div><strong>Zero Network Payload</strong><span>Open Browser DevTools → Network to verify: absolutely zero file bytes leave.</span></div>
+          </li>
+        </ul>
+        <p class="note" style="margin-top:18px">100% Client-Side. Completely offline capable once loaded.</p>
+      </section>
+
+      <section class="glass-card panel limits" id="limits">
+        <h2>Honest limits</h2>
+        <p>Because processing runs locally on your machine's hardware, strict physical limits apply:</p>
+        <ul>
+          <li>Optimized for images & standard text files. Excessive files (>80MB) will exhaust browser tab RAM.</li>
+          <li>Proprietary binary Office docs (DOCX, XLSX, PPTX) and heavy video containers are not parsed.</li>
+          <li>PDF is an instant export format (rendering pages locally to PDF), not an interactive PDF editor.</li>
+          <li>WebP & AVIF output compatibility depends on your browser’s canvas engine.</li>
+        </ul>
+      </section>
+    </div>
+
+    <!-- Converter Section -->
+    <section class="glass-card" id="converter">
+      <h2>Convert locally</h2>
+      <p class="note" style="margin-bottom:20px">Choose a local file, pick your target extension, and instantly save the rendered file.</p>
+
+      <div class="drop" id="drop">
+        <input class="file-input" id="file" type="file" />
+        <div class="drop-icon-wrap">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2dd4bf" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+        </div>
+        <h3>Drop a file here</h3>
+        <p>or click browse to pick from your storage. Stays completely local.</p>
+        <label class="btn browse" for="file">Browse File</label>
+      </div>
+
+      <div class="meta" id="meta">
+        <div class="meta-top">
+          <div>
+            <div class="fname" id="fname">—</div>
+            <div class="fsub" id="fsub">—</div>
+          </div>
+          <button class="ghost" type="button" id="clear">Remove</button>
+        </div>
+      </div>
+
+      <div class="controls" id="controls">
+        <p class="label">Choose Target Format</p>
+        <div class="chips" id="chips" role="group" aria-label="Target format"></div>
+        
+        <div class="opts" id="opts">
+          <div class="field" id="qualityField">
+            <label>Quality Compression <strong id="qLabel" style="color:var(--teal);">0.92</strong></label>
+            <input id="quality" type="range" min="0.4" max="1" step="0.02" value="0.92" />
+          </div>
+          <div class="field">
+            <label>Dimension Scaling <strong id="sizeLabel" style="color:var(--teal);">Original</strong></label>
+            <select id="maxDim">
+              <option value="0">Keep original</option>
+              <option value="4096">Max 4096 px</option>
+              <option value="1920">Max 1920 px (Full HD)</option>
+              <option value="1280">Max 1280 px (720p)</option>
+              <option value="800">Max 800 px</option>
+              <option value="256">Max 256 px (App Icon)</option>
+            </select>
+          </div>
+          <div class="field" id="bgField">
+            <label>Background Fill (for Alpha to JPEG/BMP/PDF)</label>
+            <input id="bg" type="color" value="#ffffff" />
+          </div>
+        </div>
+
+        <button class="btn" type="button" id="go" style="width:100%; padding:15px;">Convert File in Browser</button>
+        <p class="status" id="status" role="status"></p>
+        <div class="bar" id="bar"><i id="barFill"></i></div>
+      </div>
+
+      <div class="result" id="result">
+        <p class="label">Converted Output</p>
+        <div class="preview" id="preview"></div>
+        <a class="btn" id="download" download style="width:100%; padding:15px;">Download Converted File</a>
+      </div>
+    </section>
+
+    <footer>
+      OnDevice keeps conversion private & on your hardware. Made by <strong>Pranav Aitha</strong>
+    </footer>
+  </div>
+
+  <script>
+    /**
+     * Interactive Dynamic 3D Card Tilt & Specular Light Engine
+     */
+    (function initGlassTilt() {
+      const cards = document.querySelectorAll(".glass-card");
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+      cards.forEach((card) => {
+        card.addEventListener("mousemove", (e) => {
+          const rect = card.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+
+          // Set specular reflection origin
+          card.style.setProperty("--mouse-x", `${x}px`);
+          card.style.setProperty("--mouse-y", `${y}px`);
+
+          // Gentle 3D perspective tilt
+          const centerX = rect.width / 2;
+          const centerY = rect.height / 2;
+          const rotateX = ((y - centerY) / centerY) * -4;
+          const rotateY = ((x - centerX) / centerX) * 4;
+
+          card.style.transform = `perspective(1000px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) translateY(-2px)`;
+        });
+
+        card.addEventListener("mouseleave", () => {
+          card.style.transform = "perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0)";
+        });
+      });
+    })();
+
+    /**
+     * Browser-Only Converter Core Logic
+     */
+    (function () {
+      const WARN_MB = 12;
+      const HARD_MB = 80;
+      const IMAGE_EXTS = "png,jpg,jpeg,webp,gif,bmp,svg,ico,avif,tif,tiff,heic,heif";
+      const TEXT_EXTS = "txt,json,csv,html,htm,md,markdown,xml,svg";
+      const OFFICE = "doc,docx,xls,xlsx,ppt,pptx,odt,ods,odp";
+      const MEDIA = "mp3,wav,aac,flac,ogg,m4a,mp4,mov,webm,mkv,avi";
+      const ARCH = "zip,rar,7z,tar,gz";
+
+      const $ = (id) => document.getElementById(id);
+      const drop = $("drop");
+      const fileInput = $("file");
+      const meta = $("meta");
+      const fname = $("fname");
+      const fsub = $("fsub");
+      const controls = $("controls");
+      const chips = $("chips");
+      const opts = $("opts");
+      const statusEl = $("status");
+      const bar = $("bar");
+      const barFill = $("barFill");
+      const result = $("result");
+      const preview = $("preview");
+      const download = $("download");
+      const goBtn = $("go");
+
+      let currentFile = null;
+      let currentKind = null;
+      let target = null;
+      let objectUrls = [];
+      let worker = null;
+
+      const canEncode = (function () {
+        const cache = {};
+        const c = document.createElement("canvas");
+        c.width = 1; c.height = 1;
+        return function (mime) {
+          if (cache[mime] != null) return cache[mime];
+          try {
+            cache[mime] = c.toDataURL(mime).indexOf("data:" + mime) === 0;
+          } catch (e) {
+            cache[mime] = false;
+          }
+          return cache[mime];
+        };
+      })();
+
+      function extOf(name) {
+        const m = String(name || "").toLowerCase().match(/\.([a-z0-9]+)$/);
+        return m ? m[1] : "";
+      }
+      function prettySize(n) {
+        if (n < 1024) return n + " B";
+        if (n < 1048576) return (n / 1024).toFixed(1) + " KB";
+        return (n / 1048576).toFixed(2) + " MB";
+      }
+      function mimeFromExt(ext) {
+        const map = {
+          png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg", webp: "image/webp",
+          gif: "image/gif", bmp: "image/bmp", svg: "image/svg+xml", ico: "image/x-icon",
+          avif: "image/avif", txt: "text/plain", json: "application/json", csv: "text/csv",
+          html: "text/html", htm: "text/html", md: "text/markdown", markdown: "text/markdown",
+          xml: "application/xml", pdf: "application/pdf"
+        };
+        return map[ext] || "";
+      }
+      function classify(file) {
+        const ext = extOf(file.name);
+        const mime = (file.type || mimeFromExt(ext) || "").toLowerCase();
+        if (IMAGE_EXTS.split(",").indexOf(ext) !== -1 || mime.indexOf("image/") === 0) return { kind: "image", ext: ext, mime: mime || "image/*" };
+        if (TEXT_EXTS.split(",").indexOf(ext) !== -1 || mime.indexOf("text/") === 0 || mime === "application/json" || mime === "application/xml") {
+          return { kind: ext === "svg" ? "image" : "text", ext: ext, mime: mime || "text/plain" };
+        }
+        if (ext === "pdf" || mime === "application/pdf") return { kind: "pdf-in", ext: ext, mime: mime };
+        if (OFFICE.split(",").indexOf(ext) !== -1) return { kind: "office", ext: ext, mime: mime };
+        if (MEDIA.split(",").indexOf(ext) !== -1) return { kind: "media", ext: ext, mime: mime };
+        if (ARCH.split(",").indexOf(ext) !== -1) return { kind: "archive", ext: ext, mime: mime };
+        if (mime.indexOf("audio/") === 0 || mime.indexOf("video/") === 0) return { kind: "media", ext: ext, mime: mime };
+        return { kind: "unknown", ext: ext, mime: mime || "unknown" };
+      }
+      function targetsFor(kind, ext) {
+        if (kind === "image") {
+          const list = [];
+          if (canEncode("image/png")) list.push({ id: "png", label: "PNG", mime: "image/png" });
+          if (canEncode("image/jpeg")) list.push({ id: "jpeg", label: "JPEG", mime: "image/jpeg" });
+          if (canEncode("image/webp")) list.push({ id: "webp", label: "WebP", mime: "image/webp" });
+          list.push({ id: "bmp", label: "BMP", mime: "image/bmp" });
+          list.push({ id: "ico", label: "ICO", mime: "image/x-icon" });
+          list.push({ id: "pdf", label: "PDF", mime: "application/pdf" });
+          return list.filter(function (t) { return t.id !== ext && !(ext === "jpg" && t.id === "jpeg"); });
+        }
+        if (kind === "text") {
+          const all = [
+            { id: "txt", label: "TXT", mime: "text/plain" },
+            { id: "json", label: "JSON", mime: "application/json" },
+            { id: "csv", label: "CSV", mime: "text/csv" },
+            { id: "html", label: "HTML", mime: "text/html" },
+            { id: "md", label: "Markdown", mime: "text/markdown" },
+            { id: "pdf", label: "PDF", mime: "application/pdf" }
+          ];
+          return all.filter(function (t) { return t.id !== ext && t.id !== (ext === "htm" ? "html" : "") && t.id !== (ext === "markdown" ? "md" : ""); });
+        }
+        return [];
+      }
+      function unsupportedMessage(info) {
+        if (info.kind === "pdf-in") {
+          return "OnDevice cannot parse incoming PDF pages without heavy node libraries. PDF is an export format only.";
+        }
+        if (info.kind === "office") {
+          return "Word, Excel, and PowerPoint files require heavy server parsers. Open the file in Office and export as PDF/CSV/TXT first.";
+        }
+        if (info.kind === "media") {
+          return "Audio and video transcode requires native hardware encoders. Use HandBrake or QuickTime on your computer.";
+        }
+        if (info.kind === "archive") {
+          return "Archives (.zip, .rar) are not unpacked in browser memory. Extract them locally first.";
+        }
+        return "This file type cannot be converted locally in this browser. Try standard images or plain text files.";
+      }
+
+      function setStatus(msg, type) {
+        statusEl.textContent = msg || "";
+        statusEl.className = "status" + (type ? " " + type : "");
+      }
+      function setProgress(p, show) {
+        bar.classList.toggle("show", !!show);
+        barFill.style.width = Math.max(0, Math.min(100, p)) + "%";
+      }
+      function revokeUrls() {
+        objectUrls.forEach(function (u) { URL.revokeObjectURL(u); });
+        objectUrls = [];
+      }
+      function rememberUrl(url) {
+        objectUrls.push(url);
+        return url;
+      }
+
+      function resetResult() {
+        result.classList.remove("show");
+        preview.innerHTML = "";
+        download.removeAttribute("href");
+      }
+
+      function renderChips(list) {
+        chips.innerHTML = "";
+        target = list[0] || null;
+        list.forEach(function (t, i) {
+          const b = document.createElement("button");
+          b.type = "button";
+          b.className = "chip";
+          b.textContent = t.label;
+          b.setAttribute("aria-pressed", i === 0 ? "true" : "false");
+          b.addEventListener("click", function () {
+            target = t;
+            Array.prototype.forEach.call(chips.children, function (c) { c.setAttribute("aria-pressed", "false"); });
+            b.setAttribute("aria-pressed", "true");
+            updateOptions();
+            resetResult();
+            setStatus("Ready to convert to " + t.label + ".", "");
+          });
+          chips.appendChild(b);
+        });
+        updateOptions();
+      }
+
+      function updateOptions() {
+        opts.classList.toggle("show", currentKind === "image");
+        $("qualityField").style.display = target && (target.id === "jpeg" || target.id === "webp" || target.id === "pdf") ? "block" : "none";
+        $("bgField").style.display = target && (target.id === "jpeg" || target.id === "bmp" || target.id === "pdf") ? "block" : "none";
+      }
+
+      $("quality").addEventListener("input", function () {
+        $("qLabel").textContent = Number($("quality").value).toFixed(2);
+      });
+      $("maxDim").addEventListener("change", function () {
+        const v = $("maxDim").value;
+        $("sizeLabel").textContent = v === "0" ? "Original" : "Max " + v + " px";
+      });
+
+      function onFile(file) {
+        currentFile = file;
+        resetResult();
+        revokeUrls();
+        const info = classify(file);
+        currentKind = info.kind;
+        fname.textContent = file.name;
+        const typeLabel = (file.type || mimeFromExt(info.ext) || "Unknown type");
+        fsub.textContent = prettySize(file.size) + " · " + typeLabel + (info.ext ? " · ." + info.ext : "");
+        meta.classList.add("show");
+
+        const mb = file.size / 1048576;
+        if (info.kind !== "image" && info.kind !== "text") {
+          controls.classList.add("show");
+          chips.innerHTML = "";
+          opts.classList.remove("show");
+          goBtn.disabled = true;
+          setProgress(0, false);
+          setStatus(unsupportedMessage(info), "err");
+          return;
+        }
+
+        const list = targetsFor(info.kind, info.ext === "jpg" ? "jpeg" : info.ext);
+        if (!list.length) {
+          controls.classList.add("show");
+          goBtn.disabled = true;
+          setStatus("No target formats are available for this file in this browser.", "err");
+          return;
+        }
+
+        controls.classList.add("show");
+        goBtn.disabled = false;
+        renderChips(list);
+        let warn = "Ready. Conversion runs 100% inside this tab.";
+        let kind = "";
+        if (info.kind === "image" && info.ext === "gif") {
+          warn = "GIF animation cannot be kept. Only the first frame will be converted.";
+          kind = "warn";
+        }
+        if (mb >= WARN_MB) {
+          warn = "This file is " + prettySize(file.size) + ". Large files consume RAM and may take longer.";
+          kind = "warn";
+        }
+        if (mb >= HARD_MB) {
+          warn = "File size exceeds 80MB safe browser limit. Please downsample first.";
+          kind = "err";
+          goBtn.disabled = true;
+        }
+        setStatus(warn, kind);
+        setProgress(0, false);
+      }
+
+      ["dragenter", "dragover"].forEach(function (ev) {
+        drop.addEventListener(ev, function (e) {
+          e.preventDefault();
+          drop.classList.add("over");
+        });
+      });
+      ["dragleave", "drop"].forEach(function (ev) {
+        drop.addEventListener(ev, function (e) {
+          e.preventDefault();
+          drop.classList.remove("over");
+        });
+      });
+      drop.addEventListener("drop", function (e) {
+        const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+        if (f) onFile(f);
+      });
+      fileInput.addEventListener("change", function () {
+        if (fileInput.files && fileInput.files[0]) onFile(fileInput.files[0]);
+      });
+      $("clear").addEventListener("click", function () {
+        currentFile = null;
+        currentKind = null;
+        target = null;
+        fileInput.value = "";
+        meta.classList.remove("show");
+        controls.classList.remove("show");
+        resetResult();
+        revokeUrls();
+        setStatus("");
+        setProgress(0, false);
+      });
+
+      function getWorker() {
+        if (worker) return worker;
+        if (typeof OffscreenCanvas === "undefined" || typeof Worker === "undefined") return null;
+        const src =
+          "self.onmessage=async(e)=>{" +
+          "const d=e.data;" +
+          "try{" +
+          "const c=new OffscreenCanvas(d.w,d.h);" +
+          "const x=c.getContext('2d');" +
+          "if(d.fill){x.fillStyle=d.fill;x.fillRect(0,0,d.w,d.h);}" +
+          "x.drawImage(d.bitmap,0,0,d.w,d.h);" +
+          "if(d.bitmap.close)d.bitmap.close();" +
+          "if(d.mode==='blob'){" +
+          "const blob=await c.convertToBlob({type:d.mime,quality:d.quality});" +
+          "const buf=await blob.arrayBuffer();" +
+          "self.postMessage({ok:true,id:d.id,buf:buf,mime:blob.type},[buf]);" +
+          "}else{" +
+          "const img=x.getImageData(0,0,d.w,d.h);" +
+          "self.postMessage({ok:true,id:d.id,data:img.data.buffer,w:img.width,h:img.height},[img.data.buffer]);" +
+          "}" +
+          "}catch(err){self.postMessage({ok:false,id:d.id,error:String(err&&err.message||err)});}" +
+          "};";
+        try {
+          worker = new Worker(URL.createObjectURL(new Blob([src], { type: "text/javascript" })));
+          return worker;
+        } catch (e) {
+          return null;
+        }
+      }
+
+      function loadBitmap(file) {
+        const opts = { imageOrientation: "from-image" };
+        if (typeof createImageBitmap === "function") {
+          return createImageBitmap(file, opts).catch(function () {
+            return createImageBitmap(file);
+          }).catch(function () {
+            return loadHtmlImage(file);
+          });
+        }
+        return loadHtmlImage(file);
+      }
+      function loadHtmlImage(file) {
+        return new Promise(function (resolve, reject) {
+          const url = rememberUrl(URL.createObjectURL(file));
+          const img = new Image();
+          img.onload = function () { resolve(img); };
+          img.onerror = function () { reject(new Error("Unable to decode image in this browser.")); };
+          img.src = url;
+        });
+      }
+      function dimsOf(img) {
+        return { w: img.width || img.naturalWidth, h: img.height || img.naturalHeight };
+      }
+      function fitSize(w, h, max) {
+        if (!max || max <= 0) return { w: w, h: h };
+        const s = Math.min(1, max / Math.max(w, h));
+        return { w: Math.max(1, Math.round(w * s)), h: Math.max(1, Math.round(h * s)) };
+      }
+      function needsFill(id) {
+        return id === "jpeg" || id === "bmp" || id === "pdf";
+      }
+
+      function drawOnCanvas(img, w, h, fill) {
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d", { willReadFrequently: true });
+        if (fill) {
+          ctx.fillStyle = fill;
+          ctx.fillRect(0, 0, w, h);
+        }
+        ctx.drawImage(img, 0, 0, w, h);
+        return canvas;
+      }
+
+      function canvasToBlob(canvas, mime, quality) {
+        return new Promise(function (resolve, reject) {
+          canvas.toBlob(function (blob) {
+            if (!blob) reject(new Error("Browser canvas encoding error for " + mime));
+            else resolve(blob);
+          }, mime, quality);
+        });
+      }
+
+      function concat(parts) {
+        let n = 0;
+        for (let i = 0; i < parts.length; i++) n += parts[i].length;
+        const out = new Uint8Array(n);
+        let o = 0;
+        for (let i = 0; i < parts.length; i++) { out.set(parts[i], o); o += parts[i].length; }
+        return out;
+      }
+      const te = new TextEncoder();
+
+      function encodeBmp(imageData) {
+        const w = imageData.width, h = imageData.height, data = imageData.data;
+        const row = w * 3;
+        const pad = (4 - (row % 4)) % 4;
+        const dataSize = (row + pad) * h;
+        const buf = new ArrayBuffer(54 + dataSize);
+        const v = new DataView(buf);
+        const u = new Uint8Array(buf);
+        v.setUint8(0, 0x42); v.setUint8(1, 0x4D);
+        v.setUint32(2, 54 + dataSize, true);
+        v.setUint32(10, 54, true);
+        v.setUint32(14, 40, true);
+        v.setInt32(18, w, true);
+        v.setInt32(22, h, true);
+        v.setUint16(26, 1, true);
+        v.setUint16(28, 24, true);
+        v.setUint32(34, dataSize, true);
+        let o = 54;
+        for (let y = h - 1; y >= 0; y--) {
+          for (let x = 0; x < w; x++) {
+            const i = (y * w + x) * 4;
+            u[o++] = data[i + 2];
+            u[o++] = data[i + 1];
+            u[o++] = data[i];
+          }
+          o += pad;
+        }
+        return new Blob([buf], { type: "image/bmp" });
+      }
+
+      function encodeIco(pngBytes, w, h) {
+        const header = new ArrayBuffer(22);
+        const v = new DataView(header);
+        v.setUint16(0, 0, true);
+        v.setUint16(2, 1, true);
+        v.setUint16(4, 1, true);
+        v.setUint8(6, w >= 256 ? 0 : w);
+        v.setUint8(7, h >= 256 ? 0 : h);
+        v.setUint8(8, 0);
+        v.setUint8(9, 0);
+        v.setUint16(10, 1, true);
+        v.setUint16(12, 32, true);
+        v.setUint32(14, pngBytes.byteLength, true);
+        v.setUint32(18, 22, true);
+        return new Blob([header, pngBytes], { type: "image/x-icon" });
+      }
+
+      function jpegPagesToPdf(pages) {
+        const enc = te;
+        const objs = [];
+        const kids = [];
+        let next = 3;
+        pages.forEach(function (p) {
+          const imgId = next++;
+          const conId = next++;
+          const pageId = next++;
+          kids.push(pageId);
+          const imgDict = enc.encode(
+            imgId + " 0 obj\n<< /Type /XObject /Subtype /Image /Width " + p.w +
+            " /Height " + p.h + " /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length " +
+            p.jpeg.byteLength + " >>\nstream\n"
+          );
+          const imgEnd = enc.encode("\nendstream\nendobj\n");
+          const content = "q " + p.pw.toFixed(2) + " 0 0 " + p.ph.toFixed(2) + " 0 0 cm /Im0 Do Q";
+          const con = enc.encode(
+            conId + " 0 obj\n<< /Length " + content.length + " >>\nstream\n" + content + "\nendstream\nendobj\n"
+          );
+          const page = enc.encode(
+            pageId + " 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 " + p.pw.toFixed(2) + " " + p.ph.toFixed(2) +
+            "] /Resources << /XObject << /Im0 " + imgId + " 0 R >> >> /Contents " + conId + " 0 R >>\nendobj\n"
+          );
+          objs.push({ id: imgId, parts: [imgDict, new Uint8Array(p.jpeg), imgEnd] });
+          objs.push({ id: conId, parts: [con] });
+          objs.push({ id: pageId, parts: [page] });
+        });
+        const kidStr = kids.map(function (id) { return id + " 0 R"; }).join(" ");
+        const catalog = enc.encode("1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n");
+        const pagesObj = enc.encode("2 0 obj\n<< /Type /Pages /Kids [" + kidStr + "] /Count " + pages.length + " >>\nendobj\n");
+        const header = enc.encode("%PDF-1.4\n%\xE2\xE3\xCF\xD3\n");
+        const bodyParts = [header, catalog, pagesObj];
+        const offsets = [0];
+        let pos = header.length;
+        offsets[1] = pos; pos += catalog.length;
+        offsets[2] = pos; pos += pagesObj.length;
+        objs.sort(function (a, b) { return a.id - b.id; });
+        objs.forEach(function (o) {
+          offsets[o.id] = pos;
+          o.parts.forEach(function (part) {
+            bodyParts.push(part);
+            pos += part.length;
+          });
+        });
+        const xrefStart = pos;
+        let xref = "xref\n0 " + (next) + "\n0000000000 65535 f \n";
+        for (let i = 1; i < next; i++) {
+          xref += String(offsets[i]).padStart(10, "0") + " 00000 n \n";
+        }
+        const xrefBytes = enc.encode(xref);
+        const trailer = enc.encode(
+          "trailer\n<< /Size " + next + " /Root 1 0 R >>\nstartxref\n" + xrefStart + "\n%%EOF"
+        );
+        bodyParts.push(xrefBytes, trailer);
+        return new Blob([concat(bodyParts)], { type: "application/pdf" });
+      }
+
+      function fitPage(w, h) {
+        const maxW = 595.28, maxH = 841.89;
+        let pw = w * (72 / 96);
+        let ph = h * (72 / 96);
+        const s2 = Math.min(1, maxW / pw, maxH / ph);
+        pw *= s2; ph *= s2;
+        return { pw: pw, ph: ph };
+      }
+
+      async function rasterize(img, w, h, fill) {
+        const wk = getWorker();
+        if (wk && typeof img.close === "function") {
+          return new Promise(function (resolve, reject) {
+            const id = String(Date.now()) + Math.random();
+            const onMsg = function (e) {
+              if (!e.data || e.data.id !== id) return;
+              wk.removeEventListener("message", onMsg);
+              if (!e.data.ok) reject(new Error(e.data.error || "Worker error"));
+              else resolve(e.data);
+            };
+            wk.addEventListener("message", onMsg);
+            try {
+              wk.postMessage({ id: id, bitmap: img, w: w, h: h, fill: fill, mode: "pixels" }, [img]);
+            } catch (err) {
+              wk.removeEventListener("message", onMsg);
+              reject(err);
+            }
+          });
+        }
+        const canvas = drawOnCanvas(img, w, h, fill);
+        const imageData = canvas.getContext("2d").getImageData(0, 0, w, h);
+        return { data: imageData.data.buffer, w: w, h: h, canvas: canvas };
+      }
+
+      async function encodeRaster(img, w, h, mime, quality, fill) {
+        const wk = getWorker();
+        if (wk && typeof OffscreenCanvas !== "undefined" && typeof img.close === "function" && (mime === "image/png" || mime === "image/jpeg" || mime === "image/webp")) {
+          return new Promise(function (resolve, reject) {
+            const id = String(Date.now()) + Math.random();
+            const onMsg = function (e) {
+              if (!e.data || e.data.id !== id) return;
+              wk.removeEventListener("message", onMsg);
+              if (!e.data.ok) reject(new Error(e.data.error || "Worker error"));
+              else resolve(new Blob([e.data.buf], { type: e.data.mime || mime }));
+            };
+            wk.addEventListener("message", onMsg);
+            try {
+              wk.postMessage({ id: id, bitmap: img, w: w, h: h, fill: fill, mode: "blob", mime: mime, quality: quality }, [img]);
+            } catch (err) {
+              wk.removeEventListener("message", onMsg);
+              reject(err);
+            }
+          });
+        }
+        const canvas = drawOnCanvas(img, w, h, fill);
+        return canvasToBlob(canvas, mime, quality);
+      }
+
+      function stripHtml(html) {
+        const d = document.createElement("div");
+        d.innerHTML = html;
+        return (d.textContent || d.innerText || "").replace(/\n{3,}/g, "\n\n").trim();
+      }
+      function escapeHtml(s) {
+        return s.replace(/[&<>"]/g, function (c) {
+          return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c];
+        });
+      }
+      function simpleMd(text) {
+        let t = escapeHtml(text);
+        t = t.replace(/^### (.*)$/gm, "<h3>$1</h3>");
+        t = t.replace(/^## (.*)$/gm, "<h2>$1</h2>");
+        t = t.replace(/^# (.*)$/gm, "<h1>$1</h1>");
+        t = t.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+        t = t.replace(/\*(.+?)\*/g, "<em>$1</em>");
+        t = t.replace(/`([^`]+)`/g, "<code>$1</code>");
+        t = t.replace(/\[(.+?)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" rel="noopener">$1</a>');
+        t = t.replace(/^(?:- |\* )(.*)$/gm, "<li>$1</li>");
+        t = t.replace(/(<li>.*<\/li>\n?)+/g, "<ul>$&</ul>");
+        t = t.replace(/\n\n/g, "</p><p>");
+        return "<p>" + t + "</p>";
+      }
+      function parseCsv(text) {
+        const rows = [];
+        let row = [], cur = "", q = false;
+        for (let i = 0; i < text.length; i++) {
+          const c = text[i];
+          if (q) {
+            if (c === '"') {
+              if (text[i + 1] === '"') { cur += '"'; i++; }
+              else q = false;
+            } else cur += c;
+          } else {
+            if (c === '"') q = true;
+            else if (c === ",") { row.push(cur); cur = ""; }
+            else if (c === "\n") { row.push(cur); rows.push(row); row = []; cur = ""; }
+            else if (c !== "\r") cur += c;
+          }
+        }
+        row.push(cur);
+        if (row.length > 1 || row[0] !== "") rows.push(row);
+        return rows;
+      }
+      function csvToJson(text) {
+        const rows = parseCsv(text);
+        if (!rows.length) return "[]";
+        const headers = rows[0].map(function (h, i) { return h || ("col" + (i + 1)); });
+        const data = rows.slice(1).filter(function (r) { return r.some(function (c) { return c !== ""; }); }).map(function (r) {
+          const o = {};
+          headers.forEach(function (h, i) { o[h] = r[i] != null ? r[i] : ""; });
+          return o;
+        });
+        return JSON.stringify(data, null, 2);
+      }
+      function jsonToCsv(text) {
+        const data = JSON.parse(text);
+        const arr = Array.isArray(data) ? data : [data];
+        if (!arr.length) return "";
+        if (arr.some(function (x) { return x === null || typeof x !== "object" || Array.isArray(x); })) {
+          throw new Error("JSON → CSV requires an object or array of objects.");
+        }
+        const keys = [];
+        arr.forEach(function (o) {
+          Object.keys(o).forEach(function (k) { if (keys.indexOf(k) === -1) keys.push(k); });
+        });
+        function esc(v) {
+          if (v === null || v === undefined) return "";
+          const s = typeof v === "object" ? JSON.stringify(v) : String(v);
+          if (/[",\n]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+          return s;
+        }
+        return [keys.join(",")].concat(arr.map(function (o) {
+          return keys.map(function (k) { return esc(o[k]); }).join(",");
+        })).join("\n");
+      }
+      function wrapHtml(body) {
+        return "<!DOCTYPE html><html><head><meta charset='utf-8'><title>OnDevice export</title></head><body>" + body + "</body></html>";
+      }
+
+      async function convertText(file, to) {
+        setStatus("Reading text data…", "");
+        setProgress(20, true);
+        const raw = await file.text();
+        setProgress(50, true);
+        setStatus("Converting locally on device…", "");
+        const from = extOf(file.name);
+        let out = raw;
+        let mime = "text/plain";
+        if (to === "txt") {
+          out = (from === "html" || from === "htm") ? stripHtml(raw) : (from === "md" || from === "markdown") ? stripHtml(simpleMd(raw)) : raw;
+          mime = "text/plain";
+        } else if (to === "html") {
+          if (from === "md" || from === "markdown") out = wrapHtml(simpleMd(raw));
+          else if (from === "html" || from === "htm") out = raw;
+          else out = wrapHtml("<pre>" + escapeHtml(raw) + "</pre>");
+          mime = "text/html";
+        } else if (to === "md") {
+          out = (from === "html" || from === "htm") ? stripHtml(raw) : raw;
+          mime = "text/markdown";
+        } else if (to === "json") {
+          if (from === "csv") out = csvToJson(raw);
+          else if (from === "json") out = JSON.stringify(JSON.parse(raw), null, 2);
+          else {
+            try { out = JSON.stringify(JSON.parse(raw), null, 2); }
+            catch (e) { out = JSON.stringify({ text: raw }, null, 2); }
+          }
+          mime = "application/json";
+        } else if (to === "csv") {
+          if (from === "json") out = jsonToCsv(raw);
+          else if (from === "csv") out = raw;
+          else throw new Error("CSV conversion needs valid JSON objects or an existing CSV.");
+          mime = "text/csv";
+        } else if (to === "pdf") {
+          setStatus("Generating PDF pages…", "");
+          const blob = await textToPdf(from === "html" || from === "htm" ? stripHtml(raw) : raw);
+          setProgress(100, true);
+          return { blob: blob, mime: "application/pdf", previewType: "none", nameExt: "pdf" };
+        } else {
+          throw new Error("Target format not supported for text.");
+        }
+        setProgress(100, true);
+        return { blob: new Blob([out], { type: mime }), mime: mime, previewType: "text", text: out, nameExt: to };
+      }
+
+      async function textToPdf(text) {
+        const pageW = 794, pageH = 1123, margin = 56, font = 16, lineH = 24;
+        const canvas = document.createElement("canvas");
+        canvas.width = pageW;
+        canvas.height = pageH;
+        const ctx = canvas.getContext("2d");
+        ctx.font = font + "px ui-sans-serif, Segoe UI, sans-serif";
+        const words = String(text || "").replace(/\r\n/g, "\n").split(/(\s)/);
+        const lines = [];
+        let line = "";
+        const max = pageW - margin * 2;
+        words.forEach(function (w) {
+          if (w === "\n") { lines.push(line); line = ""; return; }
+          const trial = line + w;
+          if (ctx.measureText(trial).width > max && line) {
+            lines.push(line);
+            line = w === " " ? "" : w;
+          } else line = trial;
+        });
+        if (line) lines.push(line);
+        const per = Math.floor((pageH - margin * 2) / lineH);
+        const pages = [];
+        const quality = Number($("quality").value);
+        for (let i = 0; i < lines.length || i === 0; i += per) {
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(0, 0, pageW, pageH);
+          ctx.fillStyle = "#0f172a";
+          ctx.font = font + "px ui-sans-serif, Segoe UI, sans-serif";
+          const slice = lines.slice(i, i + per);
+          slice.forEach(function (ln, n) {
+            ctx.fillText(ln, margin, margin + font + n * lineH);
+          });
+          const blob = await canvasToBlob(canvas, "image/jpeg", quality);
+          const jpeg = await blob.arrayBuffer();
+          const box = fitPage(pageW, pageH);
+          pages.push({ jpeg: jpeg, w: pageW, h: pageH, pw: box.pw, ph: box.ph });
+          setProgress(50 + Math.min(45, (i / Math.max(lines.length, 1)) * 45), true);
+          if (lines.length === 0) break;
+        }
+        return jpegPagesToPdf(pages);
+      }
+
+      async function convertImage(file, to) {
+        setStatus("Decoding image data…", "");
+        setProgress(15, true);
+        const img = await loadBitmap(file);
+        const d = dimsOf(img);
+        if (!d.w || !d.h) throw new Error("Image has no readable width/height.");
+        if (d.w * d.h > 40000000) throw new Error("Image dimension too massive for in-browser canvas. Please downsample.");
+        const max = Number($("maxDim").value);
+        const size = fitSize(d.w, d.h, max);
+        const quality = Number($("quality").value);
+        const fill = needsFill(to) ? $("bg").value : null;
+        setStatus("Rendering canvas at " + size.w + "×" + size.h + "…", "");
+        setProgress(45, true);
+
+        if (to === "png" || to === "jpeg" || to === "webp") {
+          const mime = to === "png" ? "image/png" : to === "jpeg" ? "image/jpeg" : "image/webp";
+          if (!canEncode(mime)) throw new Error("Browser engine cannot encode " + to.toUpperCase());
+          const blob = await encodeRaster(img, size.w, size.h, mime, quality, fill);
+          setProgress(100, true);
+          return { blob: blob, mime: mime, previewType: "image", nameExt: to === "jpeg" ? "jpg" : to };
+        }
+
+        if (to === "bmp") {
+          setStatus("Generating BMP bytes…", "");
+          const px = await rasterize(img, size.w, size.h, fill);
+          const imageData = new ImageData(new Uint8ClampedArray(px.data), px.w, px.h);
+          const blob = encodeBmp(imageData);
+          setProgress(100, true);
+          return { blob: blob, mime: "image/bmp", previewType: "image", nameExt: "bmp" };
+        }
+
+        if (to === "ico") {
+          setStatus("Generating ICO container…", "");
+          const iconSize = fitSize(d.w, d.h, Math.min(max || 256, 256));
+          const canvas = drawOnCanvas(img, iconSize.w, iconSize.h, null);
+          const pngBlob = await canvasToBlob(canvas, "image/png");
+          const bytes = await pngBlob.arrayBuffer();
+          const blob = encodeIco(bytes, iconSize.w, iconSize.h);
+          setProgress(100, true);
+          return { blob: blob, mime: "image/x-icon", previewType: "image", nameExt: "ico" };
+        }
+
+        if (to === "pdf") {
+          setStatus("Building local PDF stream…", "");
+          const canvas = drawOnCanvas(img, size.w, size.h, fill || "#ffffff");
+          const jpg = await canvasToBlob(canvas, "image/jpeg", quality);
+          const jpeg = await jpg.arrayBuffer();
+          const box = fitPage(size.w, size.h);
+          const blob = jpegPagesToPdf([{ jpeg: jpeg, w: size.w, h: size.h, pw: box.pw, ph: box.ph }]);
+          setProgress(100, true);
+          return { blob: blob, mime: "application/pdf", previewType: "none", nameExt: "pdf" };
+        }
+
+        throw new Error("Target image format is not supported.");
+      }
+
+      function showPreview(pack) {
+        preview.innerHTML = "";
+        if (pack.previewType === "image") {
+          const img = document.createElement("img");
+          img.alt = "Converted file preview";
+          img.src = rememberUrl(URL.createObjectURL(pack.blob));
+          preview.appendChild(img);
+        } else if (pack.previewType === "text") {
+          const pre = document.createElement("pre");
+          pre.textContent = pack.text.length > 20000 ? pack.text.slice(0, 20000) + "\n… preview truncated" : pack.text;
+          preview.appendChild(pre);
+        } else {
+          const pre = document.createElement("pre");
+          pre.textContent = "Direct preview not needed for this format. Download is ready (" + prettySize(pack.blob.size) + ").";
+          preview.appendChild(pre);
+        }
+      }
+
+      goBtn.addEventListener("click", async function () {
+        if (!currentFile || !target || goBtn.disabled) return;
+        goBtn.disabled = true;
+        resetResult();
+        setProgress(10, true);
+        setStatus("Processing locally in browser…", "");
+        try {
+          const pack = currentKind === "image"
+            ? await convertImage(currentFile, target.id)
+            : await convertText(currentFile, target.id);
+          if (!pack || !pack.blob || pack.blob.size === 0) throw new Error("Conversion generated an empty stream.");
+          const base = currentFile.name.replace(/\.[^.]+$/, "") || "converted";
+          const outName = base + ".ondevice." + pack.nameExt;
+          const url = rememberUrl(URL.createObjectURL(pack.blob));
+          download.href = url;
+          download.download = outName;
+          download.textContent = "Download " + outName;
+          showPreview(pack);
+          result.classList.add("show");
+          setStatus("Success! Converted locally on your hardware.", "ok");
+          setProgress(100, true);
+        } catch (err) {
+          resetResult();
+          setProgress(0, true);
+          barFill.style.width = "0%";
+          setStatus("Conversion failed: " + (err && err.message ? err.message : String(err)), "err");
+        } finally {
+          goBtn.disabled = false;
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
