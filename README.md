@@ -7,6 +7,9 @@ OnDevice is a premium, privacy-first web utility engineered to convert images an
 Developed by **Pranav Aitha**
 
 ---
+**🌐 [Launch Application](https://pranav-aitha.github.io/OnDevice/)**
+
+---
 
 ## ✨ Key Features
 
